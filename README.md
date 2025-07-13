@@ -1,2 +1,0 @@
-# arbitraje-deportivo
-testeo "prueba"
