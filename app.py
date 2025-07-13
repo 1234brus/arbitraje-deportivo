@@ -16,9 +16,11 @@ if st.button("🔍 Buscar arbitrajes"):
             home = evento.get("home_team", "Equipo A")
             away = evento.get("away_team", "Equipo B")
             nombre_evento = f"{home} vs {away}"
-            cuotas = {}
+            mejores_cuotas = {}
+            detalle_casas = {}
 
             for bookie in evento.get("bookmakers", []):
+                casa = bookie.get("title", bookie.get("key", "Casa desconocida"))
                 mercados = bookie.get("markets", [])
                 if not mercados:
                     continue
@@ -26,18 +28,25 @@ if st.button("🔍 Buscar arbitrajes"):
                 for outcome in h2h:
                     nombre = outcome["name"]
                     cuota = outcome["price"]
-                    if nombre not in cuotas or cuota > cuotas[nombre]:
-                        cuotas[nombre] = cuota
+                    if nombre not in mejores_cuotas or cuota > mejores_cuotas[nombre]:
+                        mejores_cuotas[nombre] = cuota
+                        detalle_casas[nombre] = casa
 
-            if len(cuotas) >= 2:
-                resultado = detectar_arbitraje(cuotas, monto)
+            if len(mejores_cuotas) >= 2:
+                resultado = detectar_arbitraje(mejores_cuotas, monto)
                 if resultado:
                     encontrados += 1
                     st.markdown(f"### 📌 {nombre_evento}")
-                    st.write(f"**Apuestas sugeridas:**")
+                    
+                    st.write("🏦 **Mejores cuotas por resultado:**")
+                    for opcion in mejores_cuotas:
+                        st.write(f"- {opcion}: {mejores_cuotas[opcion]} en *{detalle_casas[opcion]}*")
+                    
+                    st.write("📊 **Apuestas sugeridas:**")
                     st.json(resultado["apuestas"])
                     st.success(f"💸 Ganancia estimada: S/. {resultado['ganancia']} ({resultado['porcentaje_arbitraje']}% de arbitraje)")
                     st.divider()
 
         if encontrados == 0:
             st.warning("No se encontraron oportunidades de arbitraje en este momento.")
+
